@@ -1,5 +1,5 @@
 # HG changeset patch
-# User Sabrewarrior <ujash.joshi@utoronto.ca>
+# User Ujash Joshi <ujash.joshi@utoronto.ca>
 
 Updated prefs.py to use Preferences.jsm instead of Services.jsm
 
