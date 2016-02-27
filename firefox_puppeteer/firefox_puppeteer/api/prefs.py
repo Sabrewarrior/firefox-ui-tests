@@ -34,40 +34,21 @@ class Preferences(BaseLib):
         assert pref_name is not None
 
         with self.marionette.using_context('chrome'):
+            if default_branch and pref_name in self.archive:
+                return self.archive[pref_name]
+
             return self.marionette.execute_script("""
-              Components.utils.import("resource://gre/modules/Services.jsm");
+              Components.utils.import("resource://gre/modules/Preferences.jsm");
 
-              let pref_name = arguments[0];
-              let default_branch = arguments[1];
-              let interface = arguments[2];
+              let interface = arguments[1];
 
-              let prefBranch;
-              if (default_branch) {
-                prefBranch = Services.prefs.getDefaultBranch("");
-              }
-              else {
-                prefBranch = Services.prefs;
+              if (interface !== null){
+                  return Preferences.get(arguments[0],null,
+                                          Components.interfaces[interface]);
               }
 
-              // If an interface has been set, handle it differently
-              if (interface !== null) {
-                return prefBranch.getComplexValue(pref_name,
-                                                  Components.interfaces[interface]).data;
-              }
-
-              let type = prefBranch.getPrefType(pref_name);
-
-              switch (type) {
-                case prefBranch.PREF_STRING:
-                  return prefBranch.getCharPref(pref_name);
-                case prefBranch.PREF_BOOL:
-                  return prefBranch.getBoolPref(pref_name);
-                case prefBranch.PREF_INT:
-                  return prefBranch.getIntPref(pref_name);
-                case prefBranch.PREF_INVALID:
-                  return null;
-              }
-            """, script_args=[pref_name, default_branch, interface])
+              return Preferences.get(arguments[0],null);
+            """, script_args=[pref_name, interface])
 
     def reset_pref(self, pref_name):
         """Resets a user set preference.
@@ -87,20 +68,14 @@ class Preferences(BaseLib):
         assert pref_name is not None
 
         with self.marionette.using_context('chrome'):
-            return self.marionette.execute_script("""
-              Components.utils.import("resource://gre/modules/Services.jsm");
-              let prefBranch = Services.prefs;
-
-              let pref_name = arguments[0];
-
-              if (prefBranch.prefHasUserValue(pref_name)) {
-                prefBranch.clearUserPref(pref_name);
-                return true;
-              }
-              else {
-                return false;
-              }
-            """, script_args=[pref_name])
+            if self.marionette.execute_script("""
+              Components.utils.import("resource://gre/modules/Preferences.jsm");
+              return Preferences.isSet(arguments[0]);
+            """, script_args=[pref_name]):
+                self.marionette.clear_pref(pref_name)
+                return True
+            else:
+                return False
 
     def restore_all_prefs(self):
         """Restores all previously modified preferences to their former values.
@@ -158,47 +133,4 @@ class Preferences(BaseLib):
             if pref_name not in self.archive:
                 self.archive[pref_name] = self.get_pref(pref_name)
 
-            retval = self.marionette.execute_script("""
-              Components.utils.import("resource://gre/modules/Services.jsm");
-              let prefBranch = Services.prefs;
-
-              let pref_name = arguments[0];
-              let value = arguments[1];
-
-              let type = prefBranch.getPrefType(pref_name);
-
-              // If the pref does not exist yet, get the type from the value
-              if (type == prefBranch.PREF_INVALID) {
-                switch (typeof value) {
-                  case "boolean":
-                    type = prefBranch.PREF_BOOL;
-                    break;
-                  case "number":
-                    type = prefBranch.PREF_INT;
-                    break;
-                  case "string":
-                    type = prefBranch.PREF_STRING;
-                    break;
-                  default:
-                    type = prefBranch.PREF_INVALID;
-                }
-              }
-
-              switch (type) {
-                case prefBranch.PREF_BOOL:
-                  prefBranch.setBoolPref(pref_name, value);
-                  break;
-                case prefBranch.PREF_STRING:
-                  prefBranch.setCharPref(pref_name, value);
-                  break;
-                case prefBranch.PREF_INT:
-                  prefBranch.setIntPref(pref_name, value);
-                  break;
-                default:
-                  return false;
-              }
-
-              return true;
-            """, script_args=[pref_name, value])
-
-        assert retval
+            self.marionette.set_pref(pref_name, value)
