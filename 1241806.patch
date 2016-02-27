@@ -1,8 +1,7 @@
 From 58d8604b57249d0b2fdabc8d9d4f4678e5ba6b79 Mon Sep 17 00:00:00 2001
 From: Sabrewarrior <ujash.joshi@utoronto.ca>
 Date: Fri, 26 Feb 2016 22:00:37 -0500
-Subject: [PATCH] Updated prefs.py to use Preferences.jsm instead of
- Services.jsm
+Subject: [PATCH] Bug 1241806 - Make use of Preferences.jsm for getting and setting preferences
 
 ---
  firefox_puppeteer/firefox_puppeteer/api/prefs.py | 106 ++++-------------------
