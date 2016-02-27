@@ -1,12 +1,8 @@
-From 58d8604b57249d0b2fdabc8d9d4f4678e5ba6b79 Mon Sep 17 00:00:00 2001
-From: Sabrewarrior <ujash.joshi@utoronto.ca>
-Date: Fri, 26 Feb 2016 22:00:37 -0500
-Subject: [PATCH] Updated prefs.py to use Preferences.jsm instead of
- Services.jsm
+# HG changeset patch
+# User Sabrewarrior <ujash.joshi@utoronto.ca>
 
----
- firefox_puppeteer/firefox_puppeteer/api/prefs.py | 106 ++++-------------------
- 1 file changed, 19 insertions(+), 87 deletions(-)
+Updated prefs.py to use Preferences.jsm instead of Services.jsm
+
 
 diff --git a/firefox_puppeteer/firefox_puppeteer/api/prefs.py b/firefox_puppeteer/firefox_puppeteer/api/prefs.py
 index 4ca053f..37e4b51 100644
@@ -141,6 +137,4 @@ index 4ca053f..37e4b51 100644
 -
 -        assert retval
 +            self.marionette.set_pref(pref_name, value)
--- 
-1.9.1
 
